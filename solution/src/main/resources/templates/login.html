@@ -4,39 +4,104 @@
     <title>로그인 - 넷컴 ERP</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-</head>
-<body class="bg-gray-100">
-    <div class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div class="bg-white p-8 rounded-lg shadow-md w-96 max-w-md w-full space-y-8">
-            <div>
-                <h2 class="text-center text-3xl font-extrabold text-gray-900">로그인</h2>
-            </div>
-            <form id="loginForm" class="mt-8 space-y-6" action="/login" method="post">
-                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+    <script>
+        $(document).ready(function() {
+            // URL 파라미터에서 에러 메시지 확인
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('error')) {
+                alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+            }
+
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
                 
-                <div class="rounded-md shadow-sm space-y-4">
+                const loginData = {
+                    username: $('#username').val(),
+                    password: $('#password').val()
+                };
+
+                $.ajax({
+                    url: '/login',
+                    method: 'POST',
+                    data: loginData,
+                    success: function(response, textStatus, xhr) {
+                        // 리다이렉트 URL이 응답 헤더에 있는지 확인
+                        const redirectUrl = xhr.getResponseHeader('Location') || '/main';
+                        window.location.href = redirectUrl;
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 401) {
+                            alert('이메일 또는 비밀번호가 올바르지 않습니다.');
+                        } else {
+                            alert('로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+                        }
+                    }
+                });
+            });
+
+            // 이메일 입력 필드 유효성 검사
+            $('#username').on('input', function() {
+                const email = $(this).val();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (email && !emailRegex.test(email)) {
+                    $(this).addClass('border-red-500');
+                    $('#emailError').show();
+                } else {
+                    $(this).removeClass('border-red-500');
+                    $('#emailError').hide();
+                }
+            });
+
+            // 비밀번호 입력 필드 유효성 검사
+            $('#password').on('input', function() {
+                if ($(this).val().length < 6) {
+                    $(this).addClass('border-red-500');
+                    $('#passwordError').show();
+                } else {
+                    $(this).removeClass('border-red-500');
+                    $('#passwordError').hide();
+                }
+            });
+        });
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="bg-white p-8 rounded-lg shadow-md max-w-md w-full space-y-8">
+            <div>
+                <h2 class="text-center text-3xl font-bold text-blue-900">넷컴 ERP</h2>
+                <h3 class="text-center text-xl font-medium text-gray-600 mt-2">로그인</h3>
+            </div>
+            
+            <form id="loginForm" class="mt-8 space-y-6">
+                <div class="rounded-md space-y-4">
                     <div>
                         <label for="username" class="block text-sm font-medium text-gray-700">이메일</label>
                         <input id="username" name="username" type="email" required
-                               class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm">
+                               class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm mt-1"
+                               placeholder="example@netcom.com">
+                        <p id="emailError" class="mt-1 text-sm text-red-600 hidden">올바른 이메일 형식을 입력해주세요.</p>
                     </div>
-
+                    
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-700">비밀번호</label>
                         <input id="password" name="password" type="password" required
-                               class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm">
+                               class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm mt-1"
+                               placeholder="비밀번호 입력">
+                        <p id="passwordError" class="mt-1 text-sm text-red-600 hidden">비밀번호는 최소 6자 이상이어야 합니다.</p>
                     </div>
                 </div>
 
                 <div>
                     <button type="submit"
-                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
                         로그인
                     </button>
                 </div>
             </form>
+            
             <div class="text-sm text-center">
-                <a href="/signup" class="font-medium text-blue-600 hover:text-blue-500">
+                <a href="/signup" class="font-medium text-blue-600 hover:text-blue-500 transition duration-200">
                     계정이 없으신가요? 회원가입
                 </a>
             </div>

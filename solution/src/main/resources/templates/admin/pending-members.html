@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 승인 - 넷컴 ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto py-8">
+        <h2 class="text-3xl font-bold text-center mb-8">회원가입 승인 페이지</h2>
+        
+        <div class="bg-white shadow-md rounded my-6">
+            <table class="min-w-full bg-white">
+                <thead>
+                    <tr>
+                        <th class="py-2">ID</th>
+                        <th class="py-2">이름</th>
+                        <th class="py-2">이메일</th>
+                        <th class="py-2">부서</th>
+                        <th class="py-2">직책</th>
+                        <th class="py-2">승인</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 서버에서 전달받은 pendingMembers 리스트를 반복문으로 렌더링 -->
+                    <tr th:each="member : ${pendingMembers}" class="text-center">
+                        <td class="py-2" th:text="${member.id}">1</td>
+                        <td class="py-2" th:text="${member.name}">홍길동</td>
+                        <td class="py-2" th:text="${member.email}">example@netcom.com</td>
+                        <td class="py-2" th:text="${member.department}">부서명</td>
+                        <td class="py-2" th:text="${member.position}">직책</td>
+                        <td class="py-2">
+                            <button th:attr="onclick=|approveMember(${member.id})|"
+                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">
+                                승인
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 회원 승인 요청 함수
+        function approveMember(memberId) {
+            if (!confirm('이 회원을 승인하시겠습니까?')) {
+                return;
+            }
+            
+            $.ajax({
+                url: `/admin/approve/${memberId}`, // 승인 API URL
+                method: 'POST',
+                success: function () {
+                    alert('회원이 승인되었습니다.');
+                    location.reload(); // 페이지 새로고침하여 최신 목록 반영
+                },
+                error: function () {
+                    alert('회원 승인 중 오류가 발생했습니다.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
