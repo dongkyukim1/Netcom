@@ -80,39 +80,50 @@
             </div>
         </div>
     </div>
-
-    <script>
+</body>
+<script>
     $(document).ready(function() {
     $('#signupButton').click(function() {
-        var formData = {
-            name: $('#name').val(),
-            phoneNumber: $('#phoneNumber').val(),
-            department: $('#department').val(),
-            position: $('#position').val(),
-            email: $('#email').val(),
-            password: $('#password').val()
-        };
+        if (!validateForm()) {
+            return;
+        }
 
         $.ajax({
             type: 'POST',
-            url: '/api/signup',
+            url: '/api/auth/signup',
             contentType: 'application/json',
-            data: JSON.stringify(formData),
+            data: JSON.stringify({
+                name: $('#name').val(),
+                phoneNumber: $('#phoneNumber').val(),
+                department: $('#department').val(),
+                position: $('#position').val(),
+                email: $('#email').val(),
+                password: $('#password').val()
+            }),
             success: function(response) {
                 alert(response);
-                // 직책이 차장/부장인 경우 로그인 페이지로, 그 외에는 승인 대기 페이지로 이동
-                if (formData.position === '차장' || formData.position === '부장') {
+                if ($('#position').val() === '차장' || $('#position').val() === '부장') {
                     window.location.href = '/login';
                 } else {
                     window.location.href = '/pending-approval';
                 }
             },
-            error: function(error) {
+            error: function(xhr, status, error) {
                 alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
             }
         });
     });
+
+    function validateForm() {
+        var fields = ['name', 'phoneNumber', 'department', 'position', 'email', 'password'];
+        for (var i = 0; i < fields.length; i++) {
+            if (!$('#' + fields[i]).val()) {
+                alert('모든 필드를 입력해주세요.');
+                return false;
+            }
+        }
+        return true;
+    }
 });
-    </script>
-</body>
+</script>
 </html>
